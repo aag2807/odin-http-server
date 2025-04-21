@@ -6,8 +6,6 @@ import "core:strings"
 import "core:thread"
 import "core:time"
 
-HTTP_RESPONSE :: "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n<html><body><h1>Hello from Odin HTTP Server!</h1></body></html>"
-
 App :: struct {
 	socket:   ^net.TCP_Socket,
 	endpoint: net.Endpoint,
@@ -63,8 +61,16 @@ HandleClient :: proc(socket: net.TCP_Socket) {
 		return
 	}
 
-	response := transmute([]byte)string(HTTP_RESPONSE)
+	view := NewView("index.html")
+	response := TransmuteHTMLView(view)
 	bytes_sent, send_error := net.send_tcp(socket, response)
-
 	fmt.println("bytes sent: %d", bytes_sent)
+}
+
+@(private)
+TransmuteHTMLView :: proc(view: HTMLView) -> []byte {
+	html_string := CreateHTMLFromView(view)
+	response := transmute([]byte)html_string
+
+	return response
 }
